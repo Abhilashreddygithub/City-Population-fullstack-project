@@ -1,0 +1,38 @@
+{{- if .Values.elasticsearch.enabled | default true }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-elasticsearch" .Release.Name }}
+  labels:
+    app: {{ printf "%s-elasticsearch" .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.elasticsearch.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ printf "%s-elasticsearch" .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ printf "%s-elasticsearch" .Release.Name }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: es
+          image: "{{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag | default "8.9.0" }}"
+          imagePullPolicy: {{ .Values.elasticsearch.image.pullPolicy | default "IfNotPresent" | quote }}
+          ports:
+            - containerPort: {{ .Values.elasticsearch.service.port | default 9200 }}
+            - containerPort: {{ .Values.elasticsearch.transportPort | default 9300 }}
+          env:
+            - name: discovery.type
+              value: {{ .Values.elasticsearch.discoveryType | default "single-node" | quote }}
+          resources:
+            requests:
+              memory: {{ default "512Mi" .Values.elasticsearch.resources.requests.memory | quote }}
+              cpu: {{ default "200m" .Values.elasticsearch.resources.requests.cpu | quote }}
+            limits:
+              memory: {{ default "1Gi" .Values.elasticsearch.resources.limits.memory | quote }}
+              cpu: {{ default "1" .Values.elasticsearch.resources.limits.cpu | quote }}
+{{- end }}

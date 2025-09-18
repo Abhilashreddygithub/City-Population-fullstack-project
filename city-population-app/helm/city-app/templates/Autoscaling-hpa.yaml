@@ -1,0 +1,42 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "city-app.fullname" . }}-backend-hpa
+  labels:
+    app.kubernetes.io/name: {{ include "city-app.name" . }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "city-app.fullname" . }}-backend
+  minReplicas: {{ .Values.backend.hpa.minReplicas | default 1 }}
+  maxReplicas: {{ .Values.backend.hpa.maxReplicas | default 10 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.backend.hpa.targetCPUUtilization | default 50 }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.backend.hpa.targetMemoryUtilization | default 80 }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: {{ .Values.backend.hpa.scaleUp.stabilizationWindowSeconds | default 0 }}
+      policies:
+        - type: Percent
+          value: {{ .Values.backend.hpa.scaleUp.policyPercent | default 100 }}
+          periodSeconds: {{ .Values.backend.hpa.scaleUp.periodSeconds | default 15 }}
+    scaleDown:
+      stabilizationWindowSeconds: {{ .Values.backend.hpa.scaleDown.stabilizationWindowSeconds | default 300 }}
+      policies:
+        - type: Percent
+          value: {{ .Values.backend.hpa.scaleDown.policyPercent | default 100 }}
+          periodSeconds: {{ .Values.backend.hpa.scaleDown.periodSeconds | default 60 }}

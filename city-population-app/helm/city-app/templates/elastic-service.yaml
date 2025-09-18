@@ -1,0 +1,20 @@
+{{- if .Values.elasticsearch.enabled | default true }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-elasticsearch" .Release.Name }}
+  labels:
+    app: {{ printf "%s-elasticsearch" .Release.Name }}
+    release: {{ .Release.Name }}
+spec:
+  type: {{ .Values.elasticsearch.service.type | default "ClusterIP" }}
+  selector:
+    app: {{ printf "%s-elasticsearch" .Release.Name }}
+  ports:
+    - name: http
+      port: {{ .Values.elasticsearch.service.port | default 9200 }}
+      targetPort: {{ .Values.elasticsearch.service.port | default 9200 }}
+    - name: transport
+      port: {{ .Values.elasticsearch.transportPort | default 9300 }}
+      targetPort: {{ .Values.elasticsearch.transportPort | default 9300 }}
+{{- end }}

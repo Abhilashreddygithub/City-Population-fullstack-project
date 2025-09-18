@@ -1,0 +1,17 @@
+{{- if .Values.frontend.enabled | default true }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-frontend" .Release.Name }}
+  labels:
+    app: {{ printf "%s-frontend" .Release.Name }}
+    release: {{ .Release.Name }}
+spec:
+  type: {{ .Values.frontend.service.type | default "ClusterIP" }}
+  selector:
+    app: {{ printf "%s-frontend" .Release.Name }}
+  ports:
+    - name: http
+      port: {{ .Values.frontend.service.port | default 80 }}
+      targetPort: {{ .Values.frontend.service.port | default 80 }}
+{{- end }}

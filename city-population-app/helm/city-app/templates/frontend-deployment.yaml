@@ -1,0 +1,34 @@
+{{- if .Values.frontend.enabled | default true }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-frontend" .Release.Name }}
+  labels:
+    app: {{ printf "%s-frontend" .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.frontend.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ printf "%s-frontend" .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ printf "%s-frontend" .Release.Name }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy | default "IfNotPresent" | quote }}
+          ports:
+            - containerPort: {{ .Values.frontend.service.port | default 80 }}
+          resources:
+            requests:
+              cpu: {{ default "50m" .Values.frontend.resources.requests.cpu | quote }}
+              memory: {{ default "64Mi" .Values.frontend.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ default "150m" .Values.frontend.resources.limits.cpu | quote }}
+              memory: {{ default "128Mi" .Values.frontend.resources.limits.memory | quote }}
+{{- end }}
